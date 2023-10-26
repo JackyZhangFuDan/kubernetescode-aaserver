@@ -20,8 +20,8 @@ package fake
 
 import (
 	clientset "github.com/kubernetescode-aaserver/pkg/generated/clientset/versioned"
-	provisionv1alpha1 "github.com/kubernetescode-aaserver/pkg/generated/clientset/versioned/typed/provisionrequest/v1alpha1"
-	fakeprovisionv1alpha1 "github.com/kubernetescode-aaserver/pkg/generated/clientset/versioned/typed/provisionrequest/v1alpha1/fake"
+	provisionv1alpha1 "github.com/kubernetescode-aaserver/pkg/generated/clientset/versioned/typed/provision/v1alpha1"
+	fakeprovisionv1alpha1 "github.com/kubernetescode-aaserver/pkg/generated/clientset/versioned/typed/provision/v1alpha1/fake"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/discovery"

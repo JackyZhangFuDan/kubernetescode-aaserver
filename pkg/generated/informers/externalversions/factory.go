@@ -25,7 +25,7 @@ import (
 
 	versioned "github.com/kubernetescode-aaserver/pkg/generated/clientset/versioned"
 	internalinterfaces "github.com/kubernetescode-aaserver/pkg/generated/informers/externalversions/internalinterfaces"
-	provisionrequest "github.com/kubernetescode-aaserver/pkg/generated/informers/externalversions/provisionrequest"
+	provision "github.com/kubernetescode-aaserver/pkg/generated/informers/externalversions/provision"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
@@ -243,9 +243,9 @@ type SharedInformerFactory interface {
 	// client.
 	InformerFor(obj runtime.Object, newFunc internalinterfaces.NewInformerFunc) cache.SharedIndexInformer
 
-	Provision() provisionrequest.Interface
+	Provision() provision.Interface
 }
 
-func (f *sharedInformerFactory) Provision() provisionrequest.Interface {
-	return provisionrequest.New(f, f.namespace, f.tweakListOptions)
+func (f *sharedInformerFactory) Provision() provision.Interface {
+	return provision.New(f, f.namespace, f.tweakListOptions)
 }

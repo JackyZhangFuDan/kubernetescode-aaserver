@@ -22,10 +22,10 @@ import (
 	"context"
 	time "time"
 
-	provisionrequestv1alpha1 "github.com/kubernetescode-aaserver/pkg/apis/provisionrequest/v1alpha1"
+	provisionv1alpha1 "github.com/kubernetescode-aaserver/pkg/apis/provision/v1alpha1"
 	versioned "github.com/kubernetescode-aaserver/pkg/generated/clientset/versioned"
 	internalinterfaces "github.com/kubernetescode-aaserver/pkg/generated/informers/externalversions/internalinterfaces"
-	v1alpha1 "github.com/kubernetescode-aaserver/pkg/generated/listers/provisionrequest/v1alpha1"
+	v1alpha1 "github.com/kubernetescode-aaserver/pkg/generated/listers/provision/v1alpha1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	watch "k8s.io/apimachinery/pkg/watch"
@@ -71,7 +71,7 @@ func NewFilteredProvisionRequestInformer(client versioned.Interface, namespace s
 				return client.ProvisionV1alpha1().ProvisionRequests(namespace).Watch(context.TODO(), options)
 			},
 		},
-		&provisionrequestv1alpha1.ProvisionRequest{},
+		&provisionv1alpha1.ProvisionRequest{},
 		resyncPeriod,
 		indexers,
 	)
@@ -82,7 +82,7 @@ func (f *provisionRequestInformer) defaultInformer(client versioned.Interface, r
 }
 
 func (f *provisionRequestInformer) Informer() cache.SharedIndexInformer {
-	return f.factory.InformerFor(&provisionrequestv1alpha1.ProvisionRequest{}, f.defaultInformer)
+	return f.factory.InformerFor(&provisionv1alpha1.ProvisionRequest{}, f.defaultInformer)
 }
 
 func (f *provisionRequestInformer) Lister() v1alpha1.ProvisionRequestLister {
