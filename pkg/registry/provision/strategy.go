@@ -60,7 +60,7 @@ func GetAttrs(obj runtime.Object) (labels.Set, fields.Set, error) {
 	return labels.Set(object.ObjectMeta.Labels), fs, nil
 }
 
-func MatchJenkinsService(label labels.Selector, field fields.Selector) storage.SelectionPredicate {
+func MatchService(label labels.Selector, field fields.Selector) storage.SelectionPredicate {
 	return storage.SelectionPredicate{
 		Label:    label,
 		Field:    field,

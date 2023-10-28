@@ -15,7 +15,7 @@ func NewREST(scheme *runtime.Scheme, optsGetter generic.RESTOptionsGetter) (*reg
 	store := &gRegistry.Store{
 		NewFunc:                  func() runtime.Object { return &provision.ProvisionRequest{} },
 		NewListFunc:              func() runtime.Object { return &provision.ProvisionRequestList{} },
-		PredicateFunc:            MatchJenkinsService,
+		PredicateFunc:            MatchService,
 		DefaultQualifiedResource: provision.Resource("provisionrequests"),
 
 		CreateStrategy: strategy,
