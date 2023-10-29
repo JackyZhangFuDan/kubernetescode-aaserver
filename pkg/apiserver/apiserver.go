@@ -6,11 +6,14 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
 	"k8s.io/apimachinery/pkg/version"
+	openapinamer "k8s.io/apiserver/pkg/endpoints/openapi"
 	"k8s.io/apiserver/pkg/registry/rest"
 	gserver "k8s.io/apiserver/pkg/server"
+	"k8s.io/apiserver/pkg/util/openapi"
 
 	"github.com/kubernetescode-aaserver/pkg/apis/provision"
 	"github.com/kubernetescode-aaserver/pkg/apis/provision/install"
+	generatedopenapi "github.com/kubernetescode-aaserver/pkg/generated/openapi"
 	"github.com/kubernetescode-aaserver/pkg/registry"
 	provisionstore "github.com/kubernetescode-aaserver/pkg/registry/provision"
 )
@@ -51,6 +54,7 @@ type CompletedConfig struct {
 }
 
 func (cfg *Config) Complete() CompletedConfig {
+	// version
 	cconfig := completedConfig{
 		cfg.GenericConfig.Complete(),
 	}
@@ -58,6 +62,11 @@ func (cfg *Config) Complete() CompletedConfig {
 		Major: "1",
 		Minor: "0",
 	}
+	// openapiv3
+	getOpenAPIDefinitions := openapi.GetOpenAPIDefinitionsWithoutDisabledFeatures(generatedopenapi.GetOpenAPIDefinitions)
+	cconfig.GenericConfig.OpenAPIV3Config = gserver.DefaultOpenAPIV3Config(getOpenAPIDefinitions, openapinamer.NewDefinitionNamer(Scheme))
+	cconfig.GenericConfig.OpenAPIV3Config.Info.Title = "aggregated-apiserver"
+
 	return CompletedConfig{&cconfig}
 }
 
