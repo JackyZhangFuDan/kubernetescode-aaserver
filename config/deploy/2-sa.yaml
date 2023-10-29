@@ -1,0 +1,7 @@
+# 可有可无，Pod上默认会绑定ns下的default sa
+# 不必担心Pod用的SA的token，虽然SA没secret，但token会动态生成交给pod
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: aapiserver
+  namespace: kubernetescode-aapiserver

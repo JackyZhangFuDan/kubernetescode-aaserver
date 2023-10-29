@@ -13,14 +13,15 @@ func NewREST(scheme *runtime.Scheme, optsGetter generic.RESTOptionsGetter) (*reg
 	strategy := NewStrategy(scheme)
 
 	store := &gRegistry.Store{
-		NewFunc:                  func() runtime.Object { return &provision.ProvisionRequest{} },
-		NewListFunc:              func() runtime.Object { return &provision.ProvisionRequestList{} },
-		PredicateFunc:            MatchService,
-		DefaultQualifiedResource: provision.Resource("provisionrequests"),
+		NewFunc:                   func() runtime.Object { return &provision.ProvisionRequest{} },
+		NewListFunc:               func() runtime.Object { return &provision.ProvisionRequestList{} },
+		PredicateFunc:             MatchService,
+		DefaultQualifiedResource:  provision.Resource("provisionrequests"),
+		SingularQualifiedResource: provision.Resource("provisionrequest"),
 
 		CreateStrategy: strategy,
 		UpdateStrategy: nil,
-		DeleteStrategy: nil,
+		DeleteStrategy: strategy,
 
 		TableConvertor: rest.NewDefaultTableConvertor(provision.Resource("provisionrequests")),
 	}

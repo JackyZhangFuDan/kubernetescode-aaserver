@@ -1,0 +1,81 @@
+# 最好把imagepullpolicy改成always，以便开发时系统刷新代码
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kubernetescode-aapiserver-dep
+  namespace: kubernetescode-aapiserver
+  labels:
+    api: kubernetescode-aapiserver
+    apiserver: "true"
+spec:
+  selector:
+    matchLabels:
+      api: kubernetescode-aapiserver
+      apiserver: "true"
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        api: kubernetescode-aapiserver
+        apiserver: "true"
+    spec:
+      serviceAccountName: aapiserver
+      containers:
+      - name: apiserver
+        image: jackyzhangfd/kubernetescode-aapiserver:1.0
+        imagePullPolicy: Always
+        volumeMounts:
+        - name: apiserver-certs
+          mountPath: /apiserver.local.config/certificates
+          readOnly: true
+        command:
+        - "./kubernetescode-aaserver"
+        args:
+        - "--etcd-servers=http://etcd-svc:2379"
+        - "--tls-cert-file=/apiserver.local.config/certificates/tls.crt"
+        - "--tls-private-key-file=/apiserver.local.config/certificates/tls.key"
+        - "--audit-log-path=-"
+        - "--audit-log-maxage=0"
+        - "--audit-log-maxbackup=0"
+        resources:
+          requests:
+            cpu: 100m
+            memory: 20Mi
+          limits:
+            cpu: 100m
+            memory: 30Mi
+      volumes:
+      - name: apiserver-certs
+        secret:
+          secretName: kubernetescode-aapiserver-srt
+---
+apiVersion: v1
+kind: Secret
+type: kubernetes.io/tls
+metadata:
+  name: kubernetescode-aapiserver-srt
+  namespace: kubernetescode-aapiserver
+  labels:
+    api: kubernetescode-aapiserver
+    apiserver: "true"
+data:
+  tls.crt: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUM3akNDQWRhZ0F3SUJBZ0lVTmNzL3NBcGpBdm12eDhUTmpGUGJqQ29ZNnM0d0RRWUpLb1pJaHZjTkFRRUwKQlFBd0hERWFNQmdHQTFVRUF4TVJUWGtnUlhoaGJYQnNaU0JUYVdkdVpYSXdJQmNOTWpNeE1ESTVNRGswTWpBdwpXaGdQTWpFeU16RXdNRFV3T1RReU1EQmFNRW94U0RCR0JnTlZCQU1UUDJ0MVltVnlibVYwWlhOamIyUmxMV0ZoCmNHbHpaWEoyWlhJdGMyVnlkbWxqWlM1cmRXSmxjbTVsZEdWelkyOWtaUzFoWVhCcGMyVnlkbVZ5TG5OMll6QloKTUJNR0J5cUdTTTQ5QWdFR0NDcUdTTTQ5QXdFSEEwSUFCSVpET2JyZS9yWVFBVUVVVWo5d3dYVnl5Q1UrU0ZKcQpWNGwrRnAraHdZNlZ0dzBWdXI4OFczYTRRZzlCcFZsRzJYeHg3NVFyZUJJNUVqMkkrdXBxbHZXamdjSXdnYjh3CkRnWURWUjBQQVFIL0JBUURBZ1dnTUJNR0ExVWRKUVFNTUFvR0NDc0dBUVVGQndNQk1Bd0dBMVVkRXdFQi93UUMKTUFBd0hRWURWUjBPQkJZRUZHejlUeERMUTltUE5Qa012Z3pGbzNGMkFjRG1NQjhHQTFVZEl3UVlNQmFBRkViVQppVWhWdXlTRnk1ZDBVbnV1VzJFOU4zcWNNRW9HQTFVZEVRUkRNRUdDUDJ0MVltVnlibVYwWlhOamIyUmxMV0ZoCmNHbHpaWEoyWlhJdGMyVnlkbWxqWlM1cmRXSmxjbTVsZEdWelkyOWtaUzFoWVhCcGMyVnlkbVZ5TG5OMll6QU4KQmdrcWhraUc5dzBCQVFzRkFBT0NBUUVBR2ljYlB3amZFSVg4ei9VbDRVdHhmeitTY1dkWlQ3Y0xiQ2F6c3BSWgpCcTNHYXBGaStOZkpsMUVxN05sWkMxUjdYY01XY3drUWNpRndIa3BBdXZiVEpFdHJpSHI0bHk0Z3hVbFF5UXkyCkkrNEE4akdXcmd5VnpLL0FkdUVqa2l5R2t6bWJsK0dxUlNOVWRJVHFnSjNOTy93QjUxaG9UWjliald5Vk9nTUEKcy85NVVvOEZlN2l6b0JUV0VhUmJWcktjeHE1Wmc4ZlhQUlE1UUhKODZzM2R0UzdYRlVFdk9XVjF4SVQ0VGZXLwptQ3JVM09pWUtlQXNxQkZHTm1sYm8rVlQ5aUVsVUd5YWFkMTVXMkVnVEVDWXRycDFTMWRlUWZPZ1QwRHptZXZQCkhqN0dmMnMxNVkva2Z2eWRPc3BKWW9DUGpxZjczanFmUnhLZkpBbCtrbG12TFE9PQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==
+  tls.key: LS0tLS1CRUdJTiBFQyBQUklWQVRFIEtFWS0tLS0tCk1IY0NBUUVFSUl3SXY2RzVQSExoaEQ3RmdtaVpIeU9GdGkzUHBhVE9KMURwenliYWp3SnFvQW9HQ0NxR1NNNDkKQXdFSG9VUURRZ0FFaGtNNXV0Nyt0aEFCUVJSU1AzREJkWExJSlQ1SVVtcFhpWDRXbjZIQmpwVzNEUlc2dnp4YgpkcmhDRDBHbFdVYlpmSEh2bEN0NEVqa1NQWWo2Nm1xVzlRPT0KLS0tLS1FTkQgRUMgUFJJVkFURSBLRVktLS0tLQo=
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kubernetescode-aapiserver-service
+  namespace: kubernetescode-aapiserver
+  labels:
+    api: kubernetescode-aapiserver
+    apiserver: "true"
+spec:
+  ports:
+  - port: 443
+    protocol: TCP
+    targetPort: 443
+  selector:
+    api: kubernetescode-aapiserver
+    apiserver: "true"

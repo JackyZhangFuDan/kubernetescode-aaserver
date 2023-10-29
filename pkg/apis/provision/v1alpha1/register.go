@@ -8,7 +8,7 @@ import (
 
 const GroupName = "provision.mydomain.com"
 
-var SchemeGroupVersion = schema.GroupVersion{Group: GroupName, Version: "v1alpha"}
+var SchemeGroupVersion = schema.GroupVersion{Group: GroupName, Version: "v1alpha1"}
 
 // 按给定的resource名字生成Group resource实例
 func Resource(resource string) schema.GroupResource {
