@@ -6,6 +6,7 @@ require (
 	k8s.io/apimachinery v0.28.3
 	k8s.io/apiserver v0.28.3
 	k8s.io/client-go v0.28.3
+	k8s.io/kube-openapi v0.0.0-20230717233707-2695361300d9
 )
 
 require (
@@ -70,8 +71,11 @@ require (
 	k8s.io/api v0.28.3 // indirect
 	k8s.io/component-base v0.28.3 // indirect
 	k8s.io/gengo v0.0.0-20220902162205-c0856e24416d // indirect
+<<<<<<< HEAD
 	k8s.io/kube-openapi v0.0.0-20230717233707-2695361300d9 // indirect
 	sigs.k8s.io/apiserver-network-proxy/konnectivity-client v0.1.2 // indirect
+=======
+>>>>>>> 7b376574d58dcd8902c89698d0262c07012c8a48
 	sigs.k8s.io/yaml v1.3.0 // indirect
 )
 
