@@ -19,7 +19,7 @@ var rootCmd = &cobra.Command{
 }
 
 func NewCommandStartServer(stopCh <-chan struct{}) *cobra.Command {
-	options := *NewServerOptions()
+	options := NewServerOptions()
 	rootCmd.RunE = func(c *cobra.Command, args []string) error {
 		if err := options.Complete(); err != nil {
 			return err
@@ -37,7 +37,7 @@ func NewCommandStartServer(stopCh <-chan struct{}) *cobra.Command {
 	return rootCmd
 }
 
-func run(o ServerOptions, stopCh <-chan struct{}) error {
+func run(o *ServerOptions, stopCh <-chan struct{}) error {
 	c, err := o.Config()
 	if err != nil {
 		return err
