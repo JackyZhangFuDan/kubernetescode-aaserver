@@ -1,18 +1,29 @@
 package apiserver
 
 import (
+	"os"
+	"path/filepath"
+
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
+	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/apimachinery/pkg/version"
 	openapinamer "k8s.io/apiserver/pkg/endpoints/openapi"
 	"k8s.io/apiserver/pkg/registry/rest"
 	gserver "k8s.io/apiserver/pkg/server"
 	"k8s.io/apiserver/pkg/util/openapi"
+	"k8s.io/client-go/kubernetes"
+	clientgorest "k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/klog/v2"
 
 	"github.com/kubernetescode-aaserver/pkg/apis/provision"
 	"github.com/kubernetescode-aaserver/pkg/apis/provision/install"
+	prcontroller "github.com/kubernetescode-aaserver/pkg/controller"
+	prclientset "github.com/kubernetescode-aaserver/pkg/generated/clientset/versioned"
+	prinformerfactory "github.com/kubernetescode-aaserver/pkg/generated/informers/externalversions"
 	generatedopenapi "github.com/kubernetescode-aaserver/pkg/generated/openapi"
 	"github.com/kubernetescode-aaserver/pkg/registry"
 	provisionstore "github.com/kubernetescode-aaserver/pkg/registry/provision"
@@ -89,13 +100,51 @@ func (ccfg completedConfig) NewServer() (*MyServer, error) {
 		Codecs,
 	)
 	v1alphastorage := map[string]rest.Storage{}
-	v1alphastorage["provisionrequests"] = registry.RESTWithErrorHandler(
-		provisionstore.NewREST(Scheme, ccfg.GenericConfig.RESTOptionsGetter))
+	prRest, prStatusRest, err := provisionstore.NewREST(Scheme, ccfg.GenericConfig.RESTOptionsGetter)
+	v1alphastorage["provisionrequests"] = registry.RESTWithErrorHandler(prRest, err)
+	v1alphastorage["provisionrequests/status"] = registry.RESTWithErrorHandler(prStatusRest, err)
 	apiGroupInfo.VersionedResourcesStorageMap["v1alpha1"] = v1alphastorage
 
 	if err := server.GenericAPIServer.InstallAPIGroup(&apiGroupInfo); err != nil {
 		return nil, err
 	}
 
+	// controller
+	config, err := clientgorest.InClusterConfig()
+	if err != nil {
+		// fallback to kubeconfig
+		kubeconfig := filepath.Join("~", ".kube", "config")
+		if envvar := os.Getenv("KUBECONFIG"); len(envvar) > 0 {
+			kubeconfig = envvar
+		}
+		config, err = clientcmd.BuildConfigFromFlags("", kubeconfig)
+		if err != nil {
+			klog.ErrorS(err, "The kubeconfig cannot be loaded: %v\n")
+			panic(err)
+		}
+	}
+	coreAPIClientset, err := kubernetes.NewForConfig(config)
+
+	client, err := prclientset.NewForConfig(genericServer.LoopbackClientConfig)
+	if err != nil {
+		klog.Error("Can't create client set for provision during creating server")
+	}
+	prInformerFactory := prinformerfactory.NewSharedInformerFactory(client, 0)
+	controller := prcontroller.NewProvisionController(
+		client,
+		prInformerFactory.Provision().V1alpha1().ProvisionRequests(),
+		coreAPIClientset)
+
+	genericServer.AddPostStartHookOrDie("aapiserver-controller", func(ctx gserver.PostStartHookContext) error {
+		ctxpr := wait.ContextForChannel(ctx.StopCh)
+		go func() {
+			controller.Run(ctxpr, 2)
+		}()
+		return nil
+	})
+	genericServer.AddPostStartHookOrDie("aapiserver-informer", func(context gserver.PostStartHookContext) error {
+		prInformerFactory.Start(context.StopCh)
+		return nil
+	})
 	return server, nil
 }

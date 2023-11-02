@@ -48,7 +48,7 @@ func run(o *ServerOptions, stopCh <-chan struct{}) error {
 		return err
 	}
 
-	s.GenericAPIServer.AddPostStartHook("start-provision-server-informers",
+	s.GenericAPIServer.AddPostStartHookOrDie("start-provision-server-informers",
 		func(context gserver.PostStartHookContext) error {
 			c.GenericConfig.SharedInformerFactory.Start(context.StopCh)
 			o.SharedInformerFactory.Start(context.StopCh)

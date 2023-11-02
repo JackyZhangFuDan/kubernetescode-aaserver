@@ -1,0 +1,12 @@
+# 保存验证中会校验namespaceName属性必有，否则失败
+---
+apiVersion: provision.mydomain.com/v1alpha1
+kind: ProvisionRequest
+metadata:
+    name: pr-for-company-bcd
+    labels:
+        company: abc
+spec:
+    ingressEntrance: /bcd/
+    businessDbVolume: BIG
+    # namespaceName: companybcd 

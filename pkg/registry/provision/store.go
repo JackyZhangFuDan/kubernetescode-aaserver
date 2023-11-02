@@ -9,7 +9,7 @@ import (
 	"k8s.io/apiserver/pkg/registry/rest"
 )
 
-func NewREST(scheme *runtime.Scheme, optsGetter generic.RESTOptionsGetter) (*registry.REST, error) {
+func NewREST(scheme *runtime.Scheme, optsGetter generic.RESTOptionsGetter) (*registry.REST, *registry.StatusREST, error) {
 	strategy := NewStrategy(scheme)
 
 	store := &gRegistry.Store{
@@ -19,15 +19,22 @@ func NewREST(scheme *runtime.Scheme, optsGetter generic.RESTOptionsGetter) (*reg
 		DefaultQualifiedResource:  provision.Resource("provisionrequests"),
 		SingularQualifiedResource: provision.Resource("provisionrequest"),
 
-		CreateStrategy: strategy,
-		UpdateStrategy: nil,
-		DeleteStrategy: strategy,
+		CreateStrategy:      strategy,
+		UpdateStrategy:      strategy,
+		DeleteStrategy:      strategy,
+		ResetFieldsStrategy: strategy,
 
 		TableConvertor: rest.NewDefaultTableConvertor(provision.Resource("provisionrequests")),
 	}
 	options := &generic.StoreOptions{RESTOptions: optsGetter, AttrFunc: GetAttrs}
 	if err := store.CompleteWithOptions(options); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	return &registry.REST{Store: store}, nil
+
+	statusStrategy := NewStatusStrategy(strategy)
+	statusStore := *store
+	statusStore.UpdateStrategy = statusStrategy
+	statusStore.ResetFieldsStrategy = statusStrategy
+
+	return &registry.REST{Store: store}, &registry.StatusREST{Store: &statusStore}, nil
 }

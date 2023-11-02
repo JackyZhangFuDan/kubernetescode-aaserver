@@ -1,15 +1,10 @@
 apiVersion: provision.mydomain.com/v1alpha1
 kind: ProvisionRequest
 metadata:
-    name: pr-for-company-abc
+    name: pr-for-company-abc2
     labels:
         company: abc
 spec:
     ingressEntrance: /abc/
     businessDbVolume: SMALL
-    namespaceName: companyAbc
-status:
-    ingressReady: false
-    dbReady: false
-
-    
+    namespaceName: companyabc

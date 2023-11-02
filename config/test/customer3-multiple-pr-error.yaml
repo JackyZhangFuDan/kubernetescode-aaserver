@@ -1,0 +1,23 @@
+# 准入控制中限制一个company只能有一个PR
+# 那第一个PR会提交成功，第二个会失败
+apiVersion: provision.mydomain.com/v1alpha1
+kind: ProvisionRequest
+metadata:
+    name: pr-for-company-def
+    labels:
+        company: def
+spec:
+    ingressEntrance: def
+    businessDbVolume: SMALL
+    namespaceName: companydef
+---
+apiVersion: provision.mydomain.com/v1alpha1
+kind: ProvisionRequest
+metadata:
+    name: pr-for-company-def2
+    labels:
+        company: def
+spec:
+    ingressEntrance: def
+    businessDbVolume: BIG
+    namespaceName: companydef

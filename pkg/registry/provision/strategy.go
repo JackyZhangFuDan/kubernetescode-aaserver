@@ -12,6 +12,7 @@ import (
 	"k8s.io/apiserver/pkg/registry/generic"
 	"k8s.io/apiserver/pkg/storage"
 	"k8s.io/apiserver/pkg/storage/names"
+	"sigs.k8s.io/structured-merge-diff/v4/fieldpath"
 )
 
 type provisionRequestStrategy struct {
@@ -51,6 +52,30 @@ func (provisionRequestStrategy) Canonicalize(obj runtime.Object) {
 
 }
 
+func (provisionRequestStrategy) AllowUnconditionalUpdate() bool {
+	return false
+}
+func (provisionRequestStrategy) PrepareForUpdate(ctx context.Context, obj runtime.Object, old runtime.Object) {
+
+}
+func (provisionRequestStrategy) ValidateUpdate(ctx context.Context, obj, old runtime.Object) field.ErrorList {
+	return field.ErrorList{}
+}
+func (provisionRequestStrategy) WarningsOnUpdate(ctx context.Context, obj runtime.Object, old runtime.Object) []string {
+	return []string{}
+}
+func (provisionRequestStrategy) AllowCreateOnUpdate() bool {
+	return false
+}
+func (provisionRequestStrategy) GetResetFields() map[fieldpath.APIVersion]*fieldpath.Set {
+	fields := map[fieldpath.APIVersion]*fieldpath.Set{
+		"provision.mydomain.com/v1alpha1": fieldpath.NewSet(
+			fieldpath.MakePathOrDie("status"),
+		),
+	}
+	return fields
+}
+
 func GetAttrs(obj runtime.Object) (labels.Set, fields.Set, error) {
 	object, ok := obj.(*provision.ProvisionRequest)
 	if !ok {
@@ -66,4 +91,39 @@ func MatchService(label labels.Selector, field fields.Selector) storage.Selectio
 		Field:    field,
 		GetAttrs: GetAttrs,
 	}
+}
+
+type provisionRequestStatusStrategy struct {
+	provisionRequestStrategy
+}
+
+func NewStatusStrategy(st provisionRequestStrategy) provisionRequestStatusStrategy {
+	return provisionRequestStatusStrategy{st}
+}
+
+// GetResetFields returns the set of fields that get reset by the strategy
+// and should not be modified by the user.
+func (provisionRequestStatusStrategy) GetResetFields() map[fieldpath.APIVersion]*fieldpath.Set {
+	return map[fieldpath.APIVersion]*fieldpath.Set{
+		"provision.mydomain.com/v1alpha1": fieldpath.NewSet(
+			fieldpath.MakePathOrDie("spec"),
+			fieldpath.MakePathOrDie("metadata", "labels"),
+		),
+	}
+}
+
+// PrepareForUpdate clears fields that are not allowed to be set by end users on update of status
+func (provisionRequestStatusStrategy) PrepareForUpdate(ctx context.Context, obj, old runtime.Object) {
+	newObj := obj.(*provision.ProvisionRequest)
+	oldObj := old.(*provision.ProvisionRequest)
+	newObj.Spec = oldObj.Spec
+	newObj.Labels = oldObj.Labels
+}
+
+func (provisionRequestStatusStrategy) ValidateUpdate(ctx context.Context, obj, old runtime.Object) field.ErrorList {
+	return nil
+}
+
+func (provisionRequestStatusStrategy) WarningsOnUpdate(ctx context.Context, obj, old runtime.Object) []string {
+	return nil
 }

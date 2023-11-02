@@ -6,9 +6,11 @@ import (
 	"io"
 
 	"github.com/kubernetescode-aaserver/pkg/apis/provision"
+	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/selection"
 	"k8s.io/apiserver/pkg/admission"
+	"k8s.io/klog/v2"
 
 	informers "github.com/kubernetescode-aaserver/pkg/generated/informers/externalversions"
 	listers "github.com/kubernetescode-aaserver/pkg/generated/listers/provision/v1alpha1"
@@ -22,6 +24,7 @@ type ProvisionPlugin struct {
 // method defined by admission.ValidationInterface
 func (plugin *ProvisionPlugin) Validate(ctx context.Context, a admission.Attributes,
 	interfaces admission.ObjectInterfaces) error {
+	klog.Info("provision admission plugin's validate method starts")
 
 	if a.GetOperation() != admission.Create {
 		return nil
@@ -36,7 +39,12 @@ func (plugin *ProvisionPlugin) Validate(ctx context.Context, a admission.Attribu
 			fmt.Errorf("the plugin isn't ready for handling request"))
 	}
 
-	req, err := labels.NewRequirement("company", selection.Equals, []string{""})
+	metaAccessor, err := meta.Accessor(a.GetObject())
+	if err != nil {
+		return err
+	}
+	company := metaAccessor.GetLabels()["company"]
+	req, err := labels.NewRequirement("company", selection.Equals, []string{company})
 	if err != nil {
 		return admission.NewForbidden(a,
 			fmt.Errorf("failed to create label requirement"))
