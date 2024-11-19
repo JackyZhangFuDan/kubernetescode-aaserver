@@ -23,11 +23,17 @@ kube::codegen::gen_client \
     --output-base "$(dirname "${BASH_SOURCE[0]}")/../../.." \
     --boilerplate "${SCRIPT_ROOT}/hack/boilerplate.go.txt"
 
-if [[ -n "${API_KNOWN_VIOLATIONS_DIR:-}" ]]; then
-    report_filename="${API_KNOWN_VIOLATIONS_DIR}/aapiserver_violation_exceptions.list"
-    if [[ "${UPDATE_API_KNOWN_VIOLATIONS:-}" == "true" ]]; then
-        update_report="--update-report"
-    fi
+# fix github issue https://github.com/JackyZhangFuDan/kubernetescode-aaserver/issues/1
+
+# if [[ -n "${API_KNOWN_VIOLATIONS_DIR:-}" ]]; then
+#    report_filename="${API_KNOWN_VIOLATIONS_DIR}/aapiserver_violation_exceptions.list"
+#    if [[ "${UPDATE_API_KNOWN_VIOLATIONS:-}" == "true" ]]; then
+#        update_report="--update-report"
+#    fi
+# fi
+report_filename="${SCRIPT_ROOT}/pkg/api/api-rules/aapiserver_violation_exceptions.list"
+if [[ "${UPDATE_API_KNOWN_VIOLATIONS:-}" == "true" ]]; then
+    update_report="--update-report"
 fi
 
 kube::codegen::gen_openapi \
